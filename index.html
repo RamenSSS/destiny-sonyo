@@ -1,0 +1,159 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>운명의 미소녀를 찾아서</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <select id="member-select" onchange="setMember(this.value)">
+        </select>
+        <div id="data-wrap">
+        </div>
+        <div id="question"></div>
+    </body>
+    <script>
+        let questions = []
+        let members = []
+        async function loadData() {
+            questions = await (await fetch('questions.json')).json()
+            members = await (await fetch('members.json')).json()
+            document.getElementById('member-select').innerHTML = "<option value=\"\">멤버를 선택하세요</option>"+members.map((m,i) => `<option value="${i+1}">${m.name}</option>`).join('')
+            for (let i=0; i<10; i++) {
+                const qna = document.createElement('div')
+                const q = document.createElement('p')
+                const a = document.createElement('p')
+                q.classList.add('question')
+                a.classList.add('answer')
+                qna.classList.add('qna')
+                q.textContent = questions[i].q
+                qna.appendChild(q)
+                qna.appendChild(a)
+                questionElements.push(qna)
+            }
+        }
+        loadData()
+        const img = document.createElement('img')
+        img.classList.add('member-img')
+        const text = document.createElement('div')
+        const name = document.createElement('p')
+        name.classList.add('member-name')
+        const description = document.createElement('div')
+        text.appendChild(name)
+        text.appendChild(description)
+        text.style.padding = '20px'
+        const questionElements = []
+        const wrap = document.getElementById('data-wrap')
+        const questionWrap = document.getElementById('question')
+        const questionTitle = document.createElement('h2')
+        questionWrap.appendChild(questionTitle)
+        function setMember(num) {
+            if (num === "") return
+            const index = Number(num)-1
+            img.src = `./images/S${num}.jpg`
+            name.textContent = members[index].name
+            description.innerHTML = ''
+            members[index].text.forEach(t => {
+                const p = document.createElement('p')
+                p.innerHTML = t
+                .replaceAll('\n','<br>')
+                .replace(/{(.+)}/g,'<span class="italic">$1</span>')
+                .replace(/\[(.+)\]/g,'<span class="bold">$1</span>')
+                description.appendChild(p)
+            })
+
+            const link = document.createElement('a')
+            link.href = "https://simte.xyz/tripleS-mydestinysonyo-kr?tm="+members[index].key
+            link.textContent = "공식 사이트에서 보기"
+            link.target = "_blank"
+            description.appendChild(link)
+
+            questionTitle.textContent = `${members[index].name}의 선택`
+            members[index].select.forEach((value,index) => {
+                const qna = questionElements[index]
+                qna.querySelector('.answer').textContent = "↳ " + questions[index].a[value-1]
+            })
+
+            if (!img.parentElement) wrap.appendChild(img)
+            if (!text.parentElement) wrap.appendChild(text)
+            questionElements.forEach(q => {
+                if (!q.parentElement) questionWrap.appendChild(q)
+            })
+        }
+    </script>
+    <style>
+        select {
+            margin: 10px auto;
+            display: block;
+            width: fit-content;
+            text-align: center;
+        }
+        #data-wrap {
+            display: grid;
+            grid-template-columns: repeat(2, 67.5vh);
+            border: 3px solid black;
+            width: 135vh;
+            height: 90vh;
+            margin: 10px auto;
+        }
+        #question {
+            margin: 10px auto;
+            width: fit-content;
+        }
+        .qna {
+            width: fit-content;
+        }
+        h2 {
+            text-align: center;
+        }
+        .member-img {
+            height: 90vh;
+            aspect-ratio: 3/4;
+        }
+        .member-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            font-family: sans-serif;
+        }
+        p {
+            margin: 0 0 10px 0;
+            font-family: serif;
+            text-align: center;
+        }
+        p:has(.bold) {
+            font-weight: bold;
+            margin: 50px 0 30px;
+        }
+        .italic {
+            font-style: italic;
+        }
+        a {
+            margin: 100px auto 0;
+            display: inline-block;
+        }
+        .question {
+            font-weight: bold;
+            font-family: sans-serif;
+            text-align: left;
+            margin: 20px 0 5px 0;
+        }
+        .answer {
+            text-align: left;
+            margin: 0 0 20px 20px;
+        }
+        @media (max-width: 768px) {
+            #data-wrap {
+                width: 100%;
+                height: auto;
+                min-height: 133vw;
+                grid-template-columns: 100%;
+            }
+            .member-img {
+                width: 100%;
+                height: auto;
+            }
+            a {
+                margin: 20px auto 0;
+            }
+        }
+    </style>
+</html>
